@@ -14,7 +14,7 @@
 */
 #define STR(WHAT) static_cast<std::stringstream&>(std::stringstream() << WHAT).str()
 
-unsigned const TOKEN_THRESHOLD = 2;
+unsigned TOKEN_THRESHOLD = 2;
 
 
 struct Project {
@@ -252,7 +252,14 @@ void CloneFinder::run(std::string const &folder, unsigned threads) {
 
 
 int main(int argc, char *argv[]) {
-    CloneFinder::run("/data/js_clean", 4);
+    if (argc != 4) {
+        std::cerr << "Invalid usage, wrong number of arguments. Use: NUM_THREADS FOLDER TOKEN_THRESHOLD" << std::endl;
+        return EXIT_FAILURE;
+    }
+    int threads = std::atoi(argv[1]);
+    std::string folder = argv[2];
+    TOKEN_THRESHOLD = std::atoi(argv[3]);
+    CloneFinder::run(folder, threads);
     //CloneFinder::run("/data/test", 1);
-    return 0;
+    return EXIT_SUCCESS;
 }
