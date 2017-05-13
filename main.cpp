@@ -14,9 +14,6 @@
 */
 #define STR(WHAT) static_cast<std::stringstream&>(std::stringstream() << WHAT).str()
 
-unsigned TOKEN_THRESHOLD = 2;
-
-
 struct Project {
     unsigned id;
     std::unordered_map<unsigned, unsigned> files;
@@ -27,12 +24,11 @@ struct Project {
         numFiles(0) {
     }
 
-    void addFile(unsigned tokenHash, unsigned tokens) {
+    void addFile(unsigned tokenHash) {
         //if (id == 17)
          //   std::cout << tokenHash << " - " << tokens << std::endl;
         ++numFiles;
-        if (tokens >= TOKEN_THRESHOLD)
-            ++ files[tokenHash];
+        ++ files[tokenHash];
     }
 };
 
@@ -63,7 +59,7 @@ private:
     }
 
     void loadData() {
-        std::ifstream f(STR(folder_ + "/clone_finder.csv"));
+        std::ifstream f(STR(folder_ + "/latest_master.csv"));
         if (not f.good())
             throw "Cannot open input file";
         std::string line;
@@ -72,7 +68,7 @@ private:
             char * x = const_cast<char*>(line.c_str());
             //unsigned fileId = strtol(x, &x , 10);
             unsigned projectId = strtol(x, &x, 10);
-            unsigned tokens = strtol(x + 1, &x, 10);
+            unsigned fileId = strtol(x + 1, &x, 10);
             //unsigned fileHash = strtol(x + 1, &x, 10);
             unsigned tokenHash = strtol(x + 1, &x, 10);
             auto i = projectsMap_.find(projectId);
@@ -84,7 +80,7 @@ private:
             } else {
                 p = i->second;
             }
-            p->addFile(tokenHash, tokens);
+            p->addFile(tokenHash);
             if (++rows % 10000000 == 0) {
                 std::cout << "    " << rows << std::endl;
                 //break;
@@ -252,13 +248,12 @@ void CloneFinder::run(std::string const &folder, unsigned threads) {
 
 
 int main(int argc, char *argv[]) {
-    if (argc != 4) {
-        std::cerr << "Invalid usage, wrong number of arguments. Use: NUM_THREADS FOLDER TOKEN_THRESHOLD" << std::endl;
+    if (argc != 3) {
+        std::cerr << "Invalid usage, wrong number of arguments. Use: NUM_THREADS FOLDER" << std::endl;
         return EXIT_FAILURE;
     }
     int threads = std::atoi(argv[1]);
     std::string folder = argv[2];
-    TOKEN_THRESHOLD = std::atoi(argv[3]);
     CloneFinder::run(folder, threads);
     //CloneFinder::run("/data/test", 1);
     return EXIT_SUCCESS;
